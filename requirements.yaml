@@ -1,0 +1,23 @@
+name: marta_music_gan
+channels:
+  - conda-forge
+  - defaults
+  - anaconda
+dependencies:
+  - jupyter
+  - numpy
+  - pandas
+  - pip
+  - seaborn
+  - matplotlib
+  - beautifulsoup4
+  - isort
+  - ipython
+  - python=3.8
+  - nb_conda_kernels
+  - cookiecutter
+  - black
+  - tqdm
+  - scikit-learn
+  - jupyterlab_code_formatter
+  - jupyterlab
