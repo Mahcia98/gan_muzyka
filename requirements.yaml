@@ -19,7 +19,6 @@ dependencies:
   - black
   - tqdm
   - scikit-learn
-  - jupyterlab_code_formatter
   - jupyterlab
   - pip:
       - mido
