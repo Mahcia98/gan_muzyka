@@ -22,3 +22,5 @@ dependencies:
   - jupyterlab
   - pip:
       - mido
+      - tensorflow
+      - memory_profiler

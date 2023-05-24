@@ -1,10 +1,4 @@
 /data/
 /midi/
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/inspectionProfiles/Project_Default.xml
-/.idea/.gitignore
-/.idea/2023_05_12_marta_music_gan.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/vcs.xml
-/.ipynb_checkpoints/Untitled-checkpoint.ipynb
+/.idea/
+/.ipynb_checkpoints/
