@@ -69,7 +69,7 @@ class MIDITransformer:
             sparse.csr_matrix: Sparse matrix representation of the MIDI file.
         """
         midi_file = mido.MidiFile(str(midi_file_path), clip=True)
-        result_array_sparse = sparse.csr_matrix(self._mid2array(midi_file), dtype=np.uint8)
+        result_array_sparse = sparse.csr_matrix(self._mid2array(midi_file))
         return result_array_sparse
 
     def _generate_training_dataset_single_thread(self):
@@ -228,8 +228,10 @@ class MIDITransformer:
         for i in range(len(all_arrays)):
             if len(all_arrays[i]) < max_len:
                 all_arrays[i] += [[0] * 88] * (max_len - len(all_arrays[i]))
-        all_arrays = np.array(all_arrays)
-        all_arrays = all_arrays.max(axis=0)
+        all_arrays = np.array(all_arrays, dtype=bool)
+        all_arrays = all_arrays[0]  # remove one empty dimension
+        # take every n'th column to reduce the horizontal resolution and take keys from limited range
+        all_arrays = all_arrays[::4, 20:62]
         # trim: remove consecutive 0s in the beginning and at the end
         sums = all_arrays.sum(axis=1)
         ends = np.where(sums > 0)[0]
