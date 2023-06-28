@@ -4,8 +4,9 @@ import numpy as np
 import tensorflow as tf
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, BatchNormalization
 from keras.models import Sequential
-from keras.optimizers import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
+from keras.optimizers.legacy import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 from constants import SPARSE_ARRAY_DATASET_FILE
 from data_utils import SparseDataLoader
@@ -13,16 +14,25 @@ from data_utils import SparseDataLoader
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
-def plot_sample_images(batch, title):
-    fig, axs = plt.subplots(2, 3)
-    for i in range(6):
-        row = i // 3  # Determine the row index
-        col = i % 3  # Determine the column index
-        image_array = batch[i]
-        axs[row, col].imshow(image_array, cmap='gray')
-        axs[row, col].axis('off')
-    plt.tight_layout()  # Adjust the layout to prevent overlapping
+def plot_sample_images(batch, title, single_image=False, save_images=False):
+    batch = batch.astype(int) * 255
+    if single_image:
+        # TODO: save image and create alternative version for 1 image
+        pass
+    else:
+        fig, axs = plt.subplots(2, 3)
+        fig.subplots_adjust(wspace=0.03, hspace=0.1)
+        for i in range(6):
+            row = i // 3  # Determine the row index
+            col = i % 3  # Determine the column index
+            image_array = batch[i]
+            axs[row, col].imshow(image_array, cmap='gray', aspect='auto')
+            axs[row, col].axis('off')
+    # plt.tight_layout()  # Adjust the layout to prevent overlapping
     plt.suptitle(title)
+    if save_images:
+        # TODO: path with date, epoch and add folder generated_images
+        plt.savefig('............')
     plt.show()
 
 
@@ -146,7 +156,9 @@ class GAN:
                    y: numpy.ndarray of shape (n_samples, 1) with all zeros.
         """
         x_input = self.get_latent_data(n_samples)  # Generate latent data for n_samples
-        X = self.generator.predict(x_input)  # Generate fake images using the generator network and the latent data
+        X = self.generator.predict(x_input,
+                                   verbose=0)  # Generate fake images using the generator network and the latent data
+        X = (X > 0.5)  # I'm using thresholding to convert float dtype to bool. Input images have bool dtype as well
         y = np.zeros((n_samples, 1))  # Create an array of zeros as the labels for the fake images
         return X, y
 
@@ -161,10 +173,9 @@ class GAN:
              None
          """
         for epoch_no in range(n_epochs):
-            print(f"Epoch {epoch_no}")
-
             # Iterate over each batch in the data loader
-            for batch_no, X_real in enumerate(self.data_loader):
+            pbar = tqdm(enumerate(self.data_loader), total=self.num_batches)
+            for batch_no, X_real in pbar:
                 n_samples = X_real.shape[0]
 
                 # Train Discriminator
@@ -182,29 +193,38 @@ class GAN:
                 # Train the GAN model (generator) using the latent data and target labels
                 g_loss = self.gan_model.train_on_batch(X_gan, y_gan)
 
-                # Plot fake samples every 5th batch
-                if batch_no % 5 == 0:
-                    plot_sample_images(batch=X_fake, title=f'Fake Samples epoch {epoch_no}')
+                if batch_no == 0:
+                    plot_sample_images(
+                        batch=X_real,
+                        title=f'Real Samples'
+                    )
+                # Plot fake samples every n-th batch
+                if batch_no % 20 == 0:
+                    plot_sample_images(
+                        batch=X_fake,
+                        title=f'Fake Samples epoch {epoch_no}'
+                    )
 
-                print(
-                    f'Epoch {epoch_no + 1}/{n_epochs}, Batch {batch_no}/{self.num_batches}, dloss={round(d_loss, 3)}, gloss={round(g_loss, 3)}')
+                pbar.set_description(
+                    f'Epoch {epoch_no + 1}/{n_epochs}, dloss={round(d_loss, 3)}, gloss={round(g_loss, 3)}'
+                )
 
 
-def main(batch_size=64):
+def main(batch_size=128, image_height=88, image_width=112, epochs=1):
     """
     batch_size: Number of samples in each training batch
+    image_height, image_width: Dimensions of the generated images
+    epochs: Number of training epochs
     """
     LATENT_DIM = 100  # Size of the latent space (1D vector of random numbers that is used to initiate the generator)
-    IMAGE_HEIGHT, IMAGE_WIDTH = (88, 112)  # Dimensions of the generated images
-    EPOCHS = 3  # Number of training epochs
     tf.keras.backend.clear_session()  # Clears the previous TensorFlow session (Clear RAM memory)
     # Create a SparseDataLoader object for loading the MIDI piano roll dataset
     print("Creating SparseDataLoader")
     data_loader = SparseDataLoader(
         file_name=SPARSE_ARRAY_DATASET_FILE,  # File name of the dataset
         batch_size=batch_size,  # Set the batch size for loading data
-        image_width=IMAGE_WIDTH,  # Set the width of the generated images
-        image_height=IMAGE_HEIGHT  # Set the height of the generated images
+        image_width=image_width,  # Set the width of the generated images
+        image_height=image_height  # Set the height of the generated images
     )
     # Create a GAN (Generative Adversarial Network) object
     print("Creating GAN")
@@ -214,11 +234,14 @@ def main(batch_size=64):
     )
     # Train the GAN
     print("Training GAN")
-    gan.train(
-        n_epochs=EPOCHS  # Set the number of training epochs
-    )
+    gan.train(n_epochs=epochs)
     print("done")
 
 
 if __name__ == "__main__":
-    main()
+    main(
+        batch_size=512,
+        image_height=42,
+        image_width=300,
+        epochs=1,
+    )
