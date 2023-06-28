@@ -68,7 +68,7 @@ if __name__ == "__main__":
     # Plot single image from batch loaded using SparseDataLoader class
     for batch in data_loader:
         print(batch.shape)
-
+        # plt.plot(batch.mean(axis=(0, 2, 3)));plt.show()  # plot average keys stroke in dataset (use big BATCH_SIZE>200k)
         image_array = batch[0]
         plt.imshow(image_array, cmap='gray')
         plt.axis('off')
