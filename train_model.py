@@ -4,13 +4,13 @@ import numpy as np
 import tensorflow as tf
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, BatchNormalization
 from keras.models import Sequential
-from keras.optimizers import Adam # use from keras.optimizers.legacy import Adam  on MacOS M1
+from keras.optimizers import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
 from matplotlib import pyplot as plt
 
 from constants import SPARSE_ARRAY_DATASET_FILE
 from data_utils import SparseDataLoader
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 
 def plot_sample_images(batch, title):
@@ -190,8 +190,10 @@ class GAN:
                     f'Epoch {epoch_no + 1}/{n_epochs}, Batch {batch_no}/{self.num_batches}, dloss={round(d_loss, 3)}, gloss={round(g_loss, 3)}')
 
 
-def main():
-    BATCH_SIZE = 64  # Number of samples in each training batch
+def main(batch_size=64):
+    """
+    batch_size: Number of samples in each training batch
+    """
     LATENT_DIM = 100  # Size of the latent space (1D vector of random numbers that is used to initiate the generator)
     IMAGE_HEIGHT, IMAGE_WIDTH = (88, 112)  # Dimensions of the generated images
     EPOCHS = 3  # Number of training epochs
@@ -200,7 +202,7 @@ def main():
     print("Creating SparseDataLoader")
     data_loader = SparseDataLoader(
         file_name=SPARSE_ARRAY_DATASET_FILE,  # File name of the dataset
-        batch_size=BATCH_SIZE,  # Set the batch size for loading data
+        batch_size=batch_size,  # Set the batch size for loading data
         image_width=IMAGE_WIDTH,  # Set the width of the generated images
         image_height=IMAGE_HEIGHT  # Set the height of the generated images
     )
