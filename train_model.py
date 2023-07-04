@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, BatchNormalization
 from keras.models import Sequential
-from keras.optimizers.legacy import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
+from keras.optimizers import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
