@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import tensorflow as tf
+from keras.distribute.distribute_strategy_test import get_model
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, BatchNormalization
 from keras.models import Sequential
 from keras.optimizers import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
@@ -10,6 +11,7 @@ from tqdm import tqdm
 
 from constants import SPARSE_ARRAY_DATASET_FILE
 from data_utils import SparseDataLoader
+from datetime import datetime
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -18,6 +20,23 @@ def plot_sample_images(batch, title, single_image=False, save_images=False):
     batch = batch.astype(int) * 255
     if single_image:
         # TODO: save image and create alternative version for 1 image
+        model = get_model()
+        model_checkpoint = tf.keras.callbacks.ModelCheckpoint(
+            'model_saves/model_{current_date}.ckpt',
+            monitor='val_loss',
+            verbose=0,
+            save_best_only=True,
+            save_weights_only=False,
+            mode='auto',
+            save_freq='epoch'
+        )
+        csv_logger = tf.keras.callbacks.CSVLogger(
+            'model_history/model_{current_date}.csv',
+            separator=',',
+            append=False
+        )
+        terminate_on_nan = tf.keras.callbacks.TerminateOnNaN()
+        model.fit(callbacks=[csv_logger, model_checkpoint, terminate_on_nan])
         pass
     else:
         fig, axs = plt.subplots(2, 3)
@@ -32,7 +51,7 @@ def plot_sample_images(batch, title, single_image=False, save_images=False):
     plt.suptitle(title)
     if save_images:
         # TODO: path with date, epoch and add folder generated_images
-        plt.savefig('............')
+        fig.savefig('generated_images/image_{current_date}_{epoch}.png')
     plt.show()
 
 
@@ -238,10 +257,11 @@ def main(batch_size=128, image_height=88, image_width=112, epochs=1):
     print("done")
 
 
+
 if __name__ == "__main__":
     main(
-        batch_size=512,
-        image_height=42,
-        image_width=300,
-        epochs=1,
+        # batch_size=512,
+        # image_height=42,
+        # image_width=300,
+        # epochs=1,
     )
