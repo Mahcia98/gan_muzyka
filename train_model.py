@@ -1,42 +1,42 @@
 import os
+from datetime import datetime
+from pathlib import Path
 
 import numpy as np
-import tensorflow as tf
-from keras.distribute.distribute_strategy_test import get_model
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, BatchNormalization
 from keras.models import Sequential
-from keras.optimizers import Adam  # use from keras.optimizers.legacy import Adam  on MacOS M1
-from matplotlib import pyplot as plt
-from tqdm import tqdm
+from keras.src.saving.saving_lib import load_model
 
 from constants import SPARSE_ARRAY_DATASET_FILE
 from data_utils import SparseDataLoader
-from datetime import datetime
+import tensorflow as tf
+
+import platform
+if platform.system() == 'Windows':
+    from keras.optimizers import Adam
+elif platform.system() == 'Darwin':
+    from keras.optimizers.legacy import Adam
+else:
+    from keras.optimizers import Adam
+
+from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
+IMAGES_PATH = Path('images')
+MODELS_PATH = Path('models')
+MODELS_PATH.mkdir(exist_ok=True)
+GENERATED_IMAGES_PATH = IMAGES_PATH / 'generated_images'
+GENERATED_IMAGES_PATH.mkdir(exist_ok=True, parents=True)
 
-def plot_sample_images(batch, title, single_image=False, save_images=False):
+current_date = datetime.now().strftime("%Y_%m_%d")
+
+
+def plot_sample_images(batch, title, batch_epoch_str, single_image=False, save_images=False):
     batch = batch.astype(int) * 255
     if single_image:
         # TODO: save image and create alternative version for 1 image
-        model = get_model()
-        model_checkpoint = tf.keras.callbacks.ModelCheckpoint(
-            'model_saves/model_{current_date}.ckpt',
-            monitor='val_loss',
-            verbose=0,
-            save_best_only=True,
-            save_weights_only=False,
-            mode='auto',
-            save_freq='epoch'
-        )
-        csv_logger = tf.keras.callbacks.CSVLogger(
-            'model_history/model_{current_date}.csv',
-            separator=',',
-            append=False
-        )
-        terminate_on_nan = tf.keras.callbacks.TerminateOnNaN()
-        model.fit(callbacks=[csv_logger, model_checkpoint, terminate_on_nan])
         pass
     else:
         fig, axs = plt.subplots(2, 3)
@@ -48,10 +48,10 @@ def plot_sample_images(batch, title, single_image=False, save_images=False):
             axs[row, col].imshow(image_array, cmap='gray', aspect='auto')
             axs[row, col].axis('off')
     # plt.tight_layout()  # Adjust the layout to prevent overlapping
-    plt.suptitle(title)
+    plt.suptitle(f"{title} | {batch_epoch_str}")
     if save_images:
-        # TODO: path with date, epoch and add folder generated_images
-        fig.savefig('generated_images/image_{current_date}_{epoch}.png')
+        # TODO: path with date, batch_epoch_str and add folder generated_images
+        fig.savefig(GENERATED_IMAGES_PATH / f'image_{current_date}_{batch_epoch_str}.png')
     plt.show()
 
 
@@ -139,7 +139,44 @@ class GAN:
         )
         return model
 
-    #
+    def save_model(self, path: Path):
+        """
+        Save the GAN model to a file.
+
+        Args:
+            path (Path): The file path where the model will be saved.
+        """
+        path.mkdir(exist_ok=True)
+        discriminator_path = path/"discriminator.keras"
+        generator_path = path/"generator.keras"
+
+        self.discriminator.save(discriminator_path)
+        self.generator.save(generator_path)
+
+    def load_model(self, path: Path):
+        """
+        Load a GAN model from a file.
+
+        Args:
+            path (Path): The file path from which the model will be loaded.
+
+        Returns:
+            GAN: An instance of the GAN class with the loaded model and data loader.
+        """
+        discriminator_path = path / "discriminator.keras"
+        generator_path = path / "generator.keras"
+
+        self.discriminator = load_model(
+            discriminator_path,
+            custom_objects={"BatchNormalization": BatchNormalization}
+        )
+        self.generator = load_model(
+            generator_path,
+            custom_objects={"BatchNormalization": BatchNormalization}
+        )
+        # latent_dim = loaded_model.layers[0].input_shape[1]
+        self.gan_model = self.build_gan()
+
     # def get_real_images(self, dataset, n_samples):
     #     ix = np.randint(0, dataset.shape[0], n_samples)
     #     X = dataset[ix]
@@ -195,6 +232,9 @@ class GAN:
             # Iterate over each batch in the data loader
             pbar = tqdm(enumerate(self.data_loader), total=self.num_batches)
             for batch_no, X_real in pbar:
+                # TODO: remove this break
+                if batch_no > 20:
+                    break
                 n_samples = X_real.shape[0]
 
                 # Train Discriminator
@@ -215,21 +255,25 @@ class GAN:
                 if batch_no == 0:
                     plot_sample_images(
                         batch=X_real,
-                        title=f'Real Samples'
+                        title=f'Real Samples',
+                        batch_epoch_str=f"{batch_no}_{self.num_batches} epoch {epoch_no}",
+                        save_images=True
                     )
                 # Plot fake samples every n-th batch
                 if batch_no % 20 == 0:
                     plot_sample_images(
                         batch=X_fake,
-                        title=f'Fake Samples epoch {epoch_no}'
+                        title=f'Fake Samples',
+                        batch_epoch_str=f"{batch_no}_{self.num_batches} epoch {epoch_no}",
+                        save_images=True
                     )
 
                 pbar.set_description(
-                    f'Epoch {epoch_no + 1}/{n_epochs}, dloss={round(d_loss, 3)}, gloss={round(g_loss, 3)}'
+                    f'Epoch {epoch_no + 1}_{n_epochs}, d_loss={round(d_loss, 3)}, g_loss={round(g_loss, 3)}'
                 )
 
 
-def main(batch_size=128, image_height=88, image_width=112, epochs=1):
+def main(batch_size=128, image_height=42, image_width=112, epochs=1, load_from_path=None):
     """
     batch_size: Number of samples in each training batch
     image_height, image_width: Dimensions of the generated images
@@ -251,17 +295,23 @@ def main(batch_size=128, image_height=88, image_width=112, epochs=1):
         latent_dim=LATENT_DIM,  # Set the dimensionality of the latent space
         data_loader=data_loader,  # Provide the data loader for training
     )
+    if load_from_path is not None:
+        print("Loading Model")
+        gan.load_model(load_from_path)
     # Train the GAN
     print("Training GAN")
     gan.train(n_epochs=epochs)
-    print("done")
-
+    print("Save model")
+    gan.save_model(path=MODELS_PATH / f"gan_save_{current_date}")
 
 
 if __name__ == "__main__":
+    main()
+    print('----------LOADING----------')
     main(
-        # batch_size=512,
+        # batch_size=128,
         # image_height=42,
         # image_width=300,
         # epochs=1,
+        load_from_path=MODELS_PATH / 'gan_save_2023_10_16'
     )

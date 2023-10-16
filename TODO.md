@@ -22,7 +22,7 @@ model_checkpoint = tf.keras.callbacks.ModelCheckpoint(
   save_best_only=True,
   save_weights_only=False,
   mode='auto',
-  save_freq='epoch'
+  save_freq='batch_epoch_str'
 )
 ```
 ```python
@@ -42,3 +42,4 @@ terminate_on_nan = tf.keras.callbacks.TerminateOnNaN()
 - save images every X batches
 - Odpal ten model na Google Colab, jeżeli się wywali to zmniejsz batch_size dwukrotnie. Potrenuj go przez jakieś dwie 3 h zobaczę jakie są wyniki jeżeli te obrazki generowane przez sieć będą czarne i zaczną się pojawiać jakieś poziome paski to git. Jak nie to zmniejszamy model.
 
+https://github.com/pyutils/line_profiler

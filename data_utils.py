@@ -54,12 +54,13 @@ class SparseDataLoader:
 
 if __name__ == "__main__":
 
-    BATCH_SIZE = 64
+    BATCH_SIZE = 1000000
 
     IMAGE_HEIGHT, IMAGE_WIDTH = (88, 112)
 
     data_loader = SparseDataLoader(
-        file_name=SPARSE_ARRAY_DATASET_FILE,
+        file_name='data/training_dataset_bool_resolution_by_4.npz',
+        # SPARSE_ARRAY_DATASET_FILE,
         batch_size=BATCH_SIZE,
         image_width=IMAGE_WIDTH,
         image_height=IMAGE_HEIGHT
