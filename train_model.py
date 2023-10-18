@@ -315,7 +315,7 @@ def cli(epochs, load_from_path):
         python train_model.py --epochs 1
         python train_model.py --epochs 1 --load_from_path 'gan_save_2023_10_18'
     """
-    main(epochs=epochs, load_from_path=load_from_path)
+    main(epochs=epochs, load_from_path=MODELS_PATH/load_from_path)
 
 
 if __name__ == "__main__":
