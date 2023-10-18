@@ -35,3 +35,7 @@ def cli(n_samples, load_from_path):
         python generate_music.py --n_samples 1 --load_from_path 'gan_save_2023_10_18'
     """
     generate(n_samples=n_samples, load_from_path=MODELS_PATH/load_from_path)
+
+
+if __name__ == "__main__":
+    cli()
