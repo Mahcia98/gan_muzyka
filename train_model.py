@@ -31,7 +31,7 @@ MODELS_PATH.mkdir(exist_ok=True)
 GENERATED_IMAGES_PATH = IMAGES_PATH / 'generated_images'
 GENERATED_IMAGES_PATH.mkdir(exist_ok=True, parents=True)
 
-current_date = datetime.now().strftime("%Y_%m_%d")
+current_date_hour = datetime.now().strftime("%Y_%m_%d_%H_%M")
 
 
 def plot_sample_images(batch, title, batch_epoch_str, single_image=False, save_images=False):
@@ -52,7 +52,7 @@ def plot_sample_images(batch, title, batch_epoch_str, single_image=False, save_i
     plt.suptitle(f"{title} | {batch_epoch_str}")
     if save_images:
         # TODO: path with date, batch_epoch_str and add folder generated_images
-        fig.savefig(GENERATED_IMAGES_PATH / f'image_{current_date}_{batch_epoch_str}.png')
+        fig.savefig(GENERATED_IMAGES_PATH / f'image_{current_date_hour}_{batch_epoch_str}.png')
     plt.show()
 
 
@@ -303,7 +303,7 @@ def main(batch_size=128, image_height=88, image_width=112, epochs=1, load_from_p
     print("Training GAN")
     gan.train(n_epochs=epochs)
     print("Save model")
-    gan.save_model(path=MODELS_PATH / f"gan_save_{current_date}")
+    gan.save_model(path=MODELS_PATH / f"gan_save_{current_date_hour}")
 
 
 @click.command()
