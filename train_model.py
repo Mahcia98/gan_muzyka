@@ -313,5 +313,5 @@ if __name__ == "__main__":
         # image_height=42,
         # image_width=300,
         # epochs=1,
-        load_from_path=MODELS_PATH / 'gan_save_2023_10_16'
+        load_from_path=MODELS_PATH / 'gan_save_2023_10_18'
     )
