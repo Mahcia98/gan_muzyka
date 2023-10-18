@@ -273,7 +273,7 @@ class GAN:
                 )
 
 
-def main(batch_size=128, image_height=42, image_width=112, epochs=1, load_from_path=None):
+def main(batch_size=128, image_height=88, image_width=112, epochs=1, load_from_path=None):
     """
     batch_size: Number of samples in each training batch
     image_height, image_width: Dimensions of the generated images
