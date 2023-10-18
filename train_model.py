@@ -1,17 +1,18 @@
 import os
+import platform
 from datetime import datetime
 from pathlib import Path
 
+import click
 import numpy as np
+import tensorflow as tf
 from keras.layers import Dense, Reshape, Flatten, Conv2D, Conv2DTranspose, LeakyReLU, Dropout, BatchNormalization
 from keras.models import Sequential
 from keras.src.saving.saving_lib import load_model
 
 from constants import SPARSE_ARRAY_DATASET_FILE
 from data_utils import SparseDataLoader
-import tensorflow as tf
 
-import platform
 if platform.system() == 'Windows':
     from keras.optimizers import Adam
 elif platform.system() == 'Darwin':
@@ -147,8 +148,8 @@ class GAN:
             path (Path): The file path where the model will be saved.
         """
         path.mkdir(exist_ok=True)
-        discriminator_path = path/"discriminator.keras"
-        generator_path = path/"generator.keras"
+        discriminator_path = path / "discriminator.keras"
+        generator_path = path / "generator.keras"
 
         self.discriminator.save(discriminator_path)
         self.generator.save(generator_path)
@@ -305,13 +306,18 @@ def main(batch_size=128, image_height=88, image_width=112, epochs=1, load_from_p
     gan.save_model(path=MODELS_PATH / f"gan_save_{current_date}")
 
 
+@click.command()
+@click.option('--epochs', type=int, default=1, help='Number of epochs (integer)')
+@click.option('--load_from_path', type=str, default=None, help='Path to load from (string)')
+def cli(epochs, load_from_path):
+    """
+    Usage:
+        python train_model.py --epochs 1
+        python train_model.py --epochs 1 --load_from_path 'gan_save_2023_10_18'
+    """
+    main(epochs=epochs, load_from_path=load_from_path)
+
+
 if __name__ == "__main__":
-    main()
-    print('----------LOADING----------')
-    main(
-        # batch_size=128,
-        # image_height=42,
-        # image_width=300,
-        # epochs=1,
-        load_from_path=MODELS_PATH / 'gan_save_2023_10_18'
-    )
+    cli()
+
