@@ -219,12 +219,13 @@ class GAN:
         y = np.zeros((n_samples, 1))  # Create an array of zeros as the labels for the fake images
         return X, y
 
-    def train(self, n_epochs):
+    def train(self, n_epochs, n_batch):
         """
          Train the GAN model for a specified number of epochs.
 
          Args:
              n_epochs (int): Number of epochs to train the GAN.
+             n_batch
 
          Returns:
              None
@@ -233,8 +234,7 @@ class GAN:
             # Iterate over each batch in the data loader
             pbar = tqdm(enumerate(self.data_loader), total=self.num_batches)
             for batch_no, X_real in pbar:
-                # TODO: remove this break
-                if batch_no > 20:
+                if batch_no > n_batch:
                     break
                 n_samples = X_real.shape[0]
 
@@ -274,7 +274,7 @@ class GAN:
                 )
 
 
-def main(batch_size=128, image_height=88, image_width=112, epochs=1, load_from_path=None):
+def main(batch_size=128, image_height=88, image_width=112, epochs=1, n_batch=20, load_from_path=None):
     """
     batch_size: Number of samples in each training batch
     image_height, image_width: Dimensions of the generated images
@@ -301,21 +301,23 @@ def main(batch_size=128, image_height=88, image_width=112, epochs=1, load_from_p
         gan.load_model(load_from_path)
     # Train the GAN
     print("Training GAN")
-    gan.train(n_epochs=epochs)
+    gan.train(n_epochs=epochs, n_batch=n_batch)
     print("Save model")
     gan.save_model(path=MODELS_PATH / f"gan_save_{current_date_hour}")
 
 
 @click.command()
 @click.option('--epochs', type=int, default=1, help='Number of epochs (integer)')
+@click.option('--n_batch', type=int, default=1, help='Number of batch (integer)')
 @click.option('--load_from_path', type=str, default=None, help='Path to load from (string)')
-def cli(epochs, load_from_path):
+def cli(n_batch, epochs, load_from_path):
     """
     Usage:
-        python train_model.py --epochs 1
-        python train_model.py --epochs 1 --load_from_path 'gan_save_2023_10_18'
+        python train_model.py --epochs 1 --n_batch 200
+        python train_model.py --epochs 1 --n_batch 200 --load_from_path 'gan_save_2023_10_18'
     """
-    main(epochs=epochs, load_from_path=MODELS_PATH/load_from_path)
+    load_from_path = MODELS_PATH/load_from_path if load_from_path else None
+    main(n_batch=n_batch, epochs=epochs, load_from_path=load_from_path)
 
 
 if __name__ == "__main__":
