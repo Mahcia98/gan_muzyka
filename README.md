@@ -11,12 +11,13 @@ To tylko raz odpal, powinno trwać ~40 min
 
 2. Następnie wygeneruj plik midi - pamiętaj, żeby nadawać w nazwie im kolejne numery
 ```bash
-
+!python generate_music.py --load_from_path 'gan_save_2023_10_18_16_43' --name '1'
 ```
 3. Przekształć go w plik mp3
 ```bash
-
+!timidity midi/sample1.mid -Ow -o - | ffmpeg -i - -acodec libmp3lame -ab 64k midi/sample1.mp3
 ```
+Użyj odpowieniej nazwy sampleX.mid i sampleX.mp3 gdzie X to numer odpalenia
 
 4. Przenieś wygenerowane obrazki z pliku images do images/run_1 
 5. Kontynuuj trenowanie
