@@ -1,3 +1,39 @@
+# Plan Trenowania
+
+
+1. Na samym Początku odpal pierwszy trening
+```bash
+python train_model.py \
+--epochs 1 \
+--n_batch 5000
+```
+To tylko raz odpal, powinno trwać ~40 min
+
+2. Następnie wygeneruj plik midi - pamiętaj, żeby nadawać w nazwie im kolejne numery
+```bash
+
+```
+3. Przekształć go w plik mp3
+```bash
+
+```
+
+4. Przenieś wygenerowane obrazki z pliku images do images/run_1 
+5. Kontynuuj trenowanie
+```bash
+python train_model.py \
+--epochs 1 \
+--n_batch 5000 \
+--load_from_path 'gan_save_2023_10_18_16_43'
+```
+zmień datę i godzinę w pliku
+
+6. Powtarzaj kroki 2-5 za każdym razem:
+- odpal sieć ładując kolejne modele, jeżeli 5000 się policzy szybko to odpal na noc 8 razy tyle. 
+- zapisując obrazki do kolejnych folderów run_1, run_2, itd
+- tworząc i zapisując plik midi i mp3 z kolejnymi nazwami name=1, name=2 itd.
+- PAMIĘTAJ, żeby zapisywać wszystkie ustawienia ile epok kiedy puściłaś, który to numer odpalenia itd.
+
 # Installing Miniconda
 Miniconda is a free, open-source package management system and environment management system. It allows you to create and manage virtual environments for different projects and install packages in those environments.
 

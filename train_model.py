@@ -313,8 +313,8 @@ def main(batch_size=128, image_height=88, image_width=112, epochs=1, n_batch=20,
 def cli(n_batch, epochs, load_from_path):
     """
     Usage:
-        python train_model.py --epochs 1 --n_batch 200
-        python train_model.py --epochs 1 --n_batch 200 --load_from_path 'gan_save_2023_10_18'
+        python train_model.py --epochs 1 --n_batch 7500
+        python train_model.py --epochs 1 --n_batch 200 --load_from_path 'gan_save_2023_10_18_16_43'
     """
     load_from_path = MODELS_PATH/load_from_path if load_from_path else None
     main(n_batch=n_batch, epochs=epochs, load_from_path=load_from_path)
