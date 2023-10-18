@@ -261,7 +261,7 @@ class GAN:
                         save_images=True
                     )
                 # Plot fake samples every n-th batch
-                if batch_no % 20 == 0:
+                if batch_no % 500 == 0:
                     plot_sample_images(
                         batch=X_fake,
                         title=f'Fake Samples',
