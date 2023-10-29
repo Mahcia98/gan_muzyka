@@ -55,13 +55,15 @@ class SparseDataLoader:
             resized_batch = np.zeros((self.batch_size, self.image_height, self.image_width, 1))
 
             for i in range(self.batch_size):
-                resized_batch[i, :, :, 0] = zoom(batch_dense_matrix[i, :, :, 0], (
+                resized_batch[i, :, :, 0] = zoom(batch_dense_matrix[i, :], (
                 self.image_height / batch_dense_matrix.shape[1], self.image_width / batch_dense_matrix.shape[2]))
 
             # Reshape batch as needed
-            batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
-            batch_images = np.transpose(batch_images, (0, 2, 1, 3))
-            yield batch_images
+            #batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
+            #batch_images = np.transpose(batch_images, (0, 2, 1, 3))
+            #yield batch_images
+
+            yield resized_batch
 
         #for batch_index in range(self.num_batches):
         #    start_index = batch_index * self.image_width * self.batch_size
