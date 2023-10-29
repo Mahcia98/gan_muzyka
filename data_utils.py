@@ -51,6 +51,13 @@ class SparseDataLoader:
             batch_images = np.transpose(batch_images, (0, 2, 1, 3))
             yield batch_images
 
+        for batch_index in range(self.num_batches):
+            start_index = batch_index * self.image_width * self.batch_size
+            end_index = (batch_index + 1) * self.image_width * self.batch_size
+
+            if end_index > self.sparse_matrix.shape[0]:
+                print("Invalid batch indices:", start_index, end_index)
+
 
 if __name__ == "__main__":
 
