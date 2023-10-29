@@ -35,28 +35,32 @@ class SparseDataLoader:
             numpy.ndarray: Batch of images.
         """
         for batch_index in range(self.num_batches):
-            # each batch consists of batch_size*image_width timestamps that are later reshaped
+            # Calculate start and end indices for the current batch
             start_index = batch_index * self.image_width * self.batch_size
-            end_index = (batch_index + 1) * self.image_width * self.batch_size
+            end_index = min((batch_index + 1) * self.image_width * self.batch_size, self.sparse_matrix.shape[0])
 
-            # extract only this part of sparse matrix that will be used in current batch
+            # Check if the batch is at the end of the data
+            if start_index >= self.sparse_matrix.shape[0]:
+                break
+
+            # Extract only this part of the sparse matrix that will be used in the current batch
             rows_to_extract = np.arange(start_index, end_index)
             batch_sparse_matrix = self.sparse_matrix[rows_to_extract, :]
 
-            # transform sparse matrix to dense form
+            # Transform sparse matrix to dense form
             batch_dense_matrix = batch_sparse_matrix.toarray()
 
-            # reshape batch so it has dimension batch_size x height x width x channels. Transposition is needed.
+            # Reshape batch as needed
             batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
             batch_images = np.transpose(batch_images, (0, 2, 1, 3))
             yield batch_images
 
-        for batch_index in range(self.num_batches):
-            start_index = batch_index * self.image_width * self.batch_size
-            end_index = (batch_index + 1) * self.image_width * self.batch_size
+        #for batch_index in range(self.num_batches):
+        #    start_index = batch_index * self.image_width * self.batch_size
+        #   end_index = (batch_index + 1) * self.image_width * self.batch_size
 
-            if end_index > self.sparse_matrix.shape[0]:
-                print("Invalid batch indices:", start_index, end_index)
+        #    if end_index > self.sparse_matrix.shape[0]:
+        #        print("Invalid batch indices:", start_index, end_index)
 
 
 if __name__ == "__main__":
