@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sc
+from scipy.ndimage import zoom
 
 from constants import SPARSE_ARRAY_DATASET_FILE
 
@@ -49,6 +50,9 @@ class SparseDataLoader:
 
             # Transform sparse matrix to dense form
             batch_dense_matrix = batch_sparse_matrix.toarray()
+
+            # Resize the dense matrix to match the target shape
+            resized_batch_dense_matrix = zoom(batch_dense_matrix, (self.batch_size, self.image_height / batch_dense_matrix.shape[1], self.image_width / batch_dense_matrix.shape[2], 1))
 
             # Reshape batch as needed
             batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
