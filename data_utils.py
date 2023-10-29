@@ -51,14 +51,15 @@ class SparseDataLoader:
             # Transform sparse matrix to dense form
             batch_dense_matrix = batch_sparse_matrix.toarray()
 
-            # Resize the dense matrix to match the target shape
-            batch_size_factor = self.batch_size
-            height_factor = self.image_height / batch_dense_matrix.shape[1]
-            width_factor = self.image_width / batch_dense_matrix.shape[2]
-            resized_batch_dense_matrix = zoom(batch_dense_matrix, (batch_size_factor, height_factor, width_factor, 1))
+            # Resize the batch to match the target shape
+            resized_batch = np.zeros((self.batch_size, self.image_height, self.image_width, 1))
+
+            for i in range(self.batch_size):
+                resized_batch[i, :, :, 0] = zoom(batch_dense_matrix[i, :, :, 0], (
+                self.image_height / batch_dense_matrix.shape[1], self.image_width / batch_dense_matrix.shape[2]))
 
             # Reshape batch as needed
-            batch_images = resized_batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
+            batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
             batch_images = np.transpose(batch_images, (0, 2, 1, 3))
             yield batch_images
 
