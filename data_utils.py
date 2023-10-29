@@ -51,7 +51,7 @@ class SparseDataLoader:
             batch_dense_matrix = batch_sparse_matrix.toarray()
 
             # Reshape batch as needed
-            batch_images = batch_dense_matrix.reshape(-1, 1)
+            batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
             batch_images = np.transpose(batch_images, (0, 2, 1, 3))
             yield batch_images
 
