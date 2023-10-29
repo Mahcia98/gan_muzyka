@@ -36,41 +36,28 @@ class SparseDataLoader:
             numpy.ndarray: Batch of images.
         """
         for batch_index in range(self.num_batches):
-            # Calculate start and end indices for the current batch
+            # each batch consists of batch_size*image_width timestamps that are later reshaped
             start_index = batch_index * self.image_width * self.batch_size
-            end_index = min((batch_index + 1) * self.image_width * self.batch_size, self.sparse_matrix.shape[0])
+            end_index = (batch_index + 1) * self.image_width * self.batch_size
 
-            # Check if the batch is at the end of the data
-            if start_index >= self.sparse_matrix.shape[0]:
-                break
-
-            # Extract only this part of the sparse matrix that will be used in the current batch
+            # extract only this part of sparse matrix that will be used in current batch
             rows_to_extract = np.arange(start_index, end_index)
             batch_sparse_matrix = self.sparse_matrix[rows_to_extract, :]
 
-            # Transform sparse matrix to dense form
+            # transform sparse matrix to dense form
             batch_dense_matrix = batch_sparse_matrix.toarray()
 
-            # Expand dimensions to add a channel dimension (assuming grayscale)
-            batch_dense_matrix = np.expand_dims(batch_dense_matrix, axis=-1)
+            # reshape batch so it has dimension batch_size x height x width x channels. Transposition is needed.
+            batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
+            batch_images = np.transpose(batch_images, (0, 2, 1, 3))
+            yield batch_images
 
-            # Resize the batch to match the target shape
-            resized_batch = zoom(batch_dense_matrix, (self.batch_size, self.image_height / batch_dense_matrix.shape[1],
-                                                      self.image_width / batch_dense_matrix.shape[2], 1))
+        for batch_index in range(self.num_batches):
+            start_index = batch_index * self.image_width * self.batch_size
+            end_index = (batch_index + 1) * self.image_width * self.batch_size
 
-            # Reshape batch as needed
-            #batch_images = batch_dense_matrix.reshape(self.batch_size, self.image_width, self.image_height, 1)
-            #batch_images = np.transpose(batch_images, (0, 2, 1, 3))
-            #yield batch_images
-
-            yield resized_batch
-
-        #for batch_index in range(self.num_batches):
-        #    start_index = batch_index * self.image_width * self.batch_size
-        #   end_index = (batch_index + 1) * self.image_width * self.batch_size
-
-        #    if end_index > self.sparse_matrix.shape[0]:
-        #        print("Invalid batch indices:", start_index, end_index)
+            if end_index > self.sparse_matrix.shape[0]:
+                print("Invalid batch indices:", start_index, end_index)
 
 
 if __name__ == "__main__":
