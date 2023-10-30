@@ -38,7 +38,7 @@ class SparseDataLoader:
         for batch_index in range(self.num_batches):
             # each batch consists of batch_size*image_width timestamps that are later reshaped
             start_index = batch_index * self.image_width * self.batch_size
-            end_index = (batch_index + 1000000) * self.image_width * self.batch_size
+            end_index = (batch_index + 1) * self.image_width * self.batch_size
 
             # extract only this part of sparse matrix that will be used in current batch
             rows_to_extract = np.arange(start_index, end_index)
@@ -54,7 +54,7 @@ class SparseDataLoader:
 
         for batch_index in range(self.num_batches):
             start_index = batch_index * self.image_width * self.batch_size
-            end_index = (batch_index + 1000000) * self.image_width * self.batch_size
+            end_index = (batch_index + 1) * self.image_width * self.batch_size
 
             if end_index > self.sparse_matrix.shape[0]:
                 print("Invalid batch indices:", start_index, end_index)
